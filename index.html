@@ -11,57 +11,19 @@
     margin: 0; padding: 15px; background: #1a1a1a; color: #fff;
     min-height: 100vh; display: flex; flex-direction: column; justify-content: center; user-select: none;
   }
-  
-  /* Зона для тапов на весь экран */
   .tap-zone { position: fixed; inset: 0; z-index: 9999; cursor: pointer; }
-
-  /* Три блока меню */
-  .menu-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 500px;
-    margin: 0 auto;
-    pointer-events: none;
-  }
-
-  .block {
-    background: #222;
-    border: 2px solid #d4af37; /* Золотистый цвет под стиль ресторана */
-    border-radius: 12px;
-    padding: 15px;
-    text-align: center;
-  }
-
-  .block-title { 
-    font-size: 22px; 
-    font-weight: bold; 
-    color: #d4af37; 
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-  
-  .block-items { 
-    font-size: 16px; 
-    color: #ccc; 
-    line-height: 1.4; 
-  }
-
-  /* Статус внизу */
-  .status {
-    margin-top: 20px; text-align: center; color: #888; font-size: 14px; pointer-events: none;
-  }
+  .menu-container { display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto; pointer-events: none; }
+  .block { background: #222; border: 2px solid #d4af37; border-radius: 12px; padding: 15px; text-align: center; }
+  .block-title { font-size: 22px; font-weight: bold; color: #d4af37; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+  .block-items { font-size: 16px; color: #ccc; line-height: 1.4; }
+  .status { margin-top: 20px; text-align: center; color: #888; font-size: 14px; pointer-events: none; }
 </style>
 </head>
 <body>
 
 <div class="tap-zone" id="tapZone"></div>
-
-<!-- Блоки меню будут построены через JS -->
 <div class="menu-container" id="menuContainer"></div>
-
-<div class="status" id="status">1 тап — слушать меню. 2 тапа — сделать заказ.</div>
+<div class="status" id="status">Загрузка...</div>
 
 <script>
   // === ДАННЫЕ ИЗ PDF ===
@@ -94,28 +56,36 @@
     ]
   };
 
+  // Создаем плоский список всех блюд для команды "Дальше"
+  let flatMenu = [];
+  for (let section in menuData) {
+    for (let item of menuData[section]) {
+      flatMenu.push({ ...item, category: section });
+    }
+  }
+
   let isSpeaking = false;
   let isListening = false;
+  let isReadingAll = false; // Флаг: читаем ли мы сейчас все меню подряд
+  let currentIndex = -1;    // На каком блюде мы остановились
+  
   const synth = window.speechSynthesis;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
 
-  // === ОТРИСОВКА БЛОКОВ НА ЭКРАНЕ ===
+  // === ОТРИСОВКА БЛОКОВ ===
   function renderMenu() {
     const container = document.getElementById('menuContainer');
+    container.innerHTML = '';
     for (let section in menuData) {
       const block = document.createElement('div');
       block.className = 'block';
-      
       const title = document.createElement('div');
       title.className = 'block-title';
       title.textContent = section;
-      
       const items = document.createElement('div');
       items.className = 'block-items';
-      // Выводим названия блюд через запятую
       items.textContent = menuData[section].map(item => item.name).join(', ');
-      
       block.appendChild(title);
       block.appendChild(items);
       container.appendChild(block);
@@ -137,24 +107,48 @@
     synth.speak(u);
   }
 
-  // === 1 ТАП: ПЕРЕЧИСЛИТЬ ВСЁ ===
+  // === ПРИВЕТСТВИЕ (НАСТРОЙКИ) ===
+  function speakInstructions() {
+    speak("Добро пожаловать в меню ресторана Интурист. Нажмите один раз на экран, чтобы прослушать всё меню. Нажмите два раза, чтобы сделать заказ. Во время чтения скажите 'Дальше', чтобы перейти к следующему блюду.");
+    document.getElementById('status').textContent = "1 тап — слушать меню. 2 тапа — сделать заказ. Скажите 'Дальше' для листания.";
+  }
+
+  // === 1 ТАП: ПЕРЕЧИСЛИТЬ ВСЁ (С ВОЗМОЖНОСТЬЮ ЛИСТАТЬ) ===
   function readAll() {
-    let text = "Меню ресторана Интурист. ";
-    for (let section in menuData) {
-      text += section + ". ";
-      for (let item of menuData[section]) {
-        text += item.name + ", " + item.price + " рублей. ";
-      }
-      text += " "; // пауза между разделами
+    isReadingAll = true;
+    currentIndex = 0;
+    readCurrentDish();
+  }
+
+  function readCurrentDish() {
+    if (!isReadingAll || currentIndex >= flatMenu.length) {
+      isReadingAll = false;
+      speak("Конец меню. Скажите 'Дальше' для начала, или нажмите два раза для заказа.");
+      return;
     }
-    text += "Чтобы сделать заказ, нажмите два раза по экрану.";
-    speak(text);
+    const item = flatMenu[currentIndex];
+    speak(`${item.category}. ${item.name}, ${item.price} рублей.`, () => {
+      if (isReadingAll) {
+        currentIndex++;
+        readCurrentDish();
+      }
+    });
+  }
+
+  // === КОМАНДА "ДАЛЬШЕ" ===
+  function nextDishVoice() {
+    isReadingAll = true; // Продолжаем режим чтения
+    currentIndex++;
+    if (currentIndex >= flatMenu.length) {
+      currentIndex = 0; // По кругу
+    }
+    readCurrentDish();
   }
 
   // === 2 ТАПА: СДЕЛАТЬ ЗАКАЗ ===
   function takeOrder() {
+    isReadingAll = false; // Останавливаем чтение всего меню
     speak("Выберите блюдо. Говорите.", () => {
-      // Как только робот закончил говорить, включаем микрофон
       if (recognition && !isListening) {
         try { recognition.start(); } catch(e) {}
       }
@@ -165,32 +159,23 @@
   function findDish(spokenText) {
     let bestMatch = null;
     let maxMatches = 0;
-    
-    // Разбиваем то, что сказал человек, на слова (длиннее 2 букв)
     const spokenWords = spokenText.toLowerCase().split(' ').filter(w => w.length > 2);
     
     for (let category in menuData) {
       for (let item of menuData[category]) {
-        // Разбиваем название блюда на слова
         const itemWords = item.name.toLowerCase().replace(/[^а-яё\s]/g, '').split(' ').filter(w => w.length > 2);
         let matches = 0;
-        
-        // Считаем, сколько слов совпало
         for (let w of spokenWords) {
           if (itemWords.some(iw => iw.includes(w) || w.includes(iw))) {
             matches++;
           }
         }
-        
-        // Запоминаем блюдо с наибольшим числом совпадений
         if (matches > maxMatches) {
           maxMatches = matches;
           bestMatch = { ...item, category };
         }
       }
     }
-    
-    // Если совпало хотя бы одно слово (например, сказали "Краб" для "Омлет с крабом")
     if (maxMatches > 0) return bestMatch;
     return null;
   }
@@ -207,29 +192,34 @@
     recognition.onresult = (event) => {
       const t = event.results[0][0].transcript.toLowerCase().trim();
       
+      // Проверяем команду "Дальше"
+      if (t.includes('дальше') || t.includes('следующ')) {
+        nextDishVoice();
+        return;
+      }
+
       // Ищем блюдо
       const dish = findDish(t);
-      
       if (dish) {
-        // Нашли блюдо!
+        isReadingAll = false; // Останавливаем чтение
         speak("Заказ принят. Вы выбрали " + dish.name + " из раздела " + dish.category + ".");
         document.getElementById('status').textContent = "Заказ принят: " + dish.name;
       } else {
-        // Не нашли
         speak("Я не расслышала заказ. Нажмите два раза и повторите.");
       }
     };
   }
 
-  // === ОБРАБОТКА ТАПОВ (1 тап / 2 тапа) ===
+  // === ОБРАБОТКА ТАПОВ ===
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
-    // Если робот говорит, клик просто останавливает его
+    // Если робот говорит, клик останавливает его
     if (isSpeaking) {
       synth.cancel();
       isSpeaking = false;
+      isReadingAll = false; // Останавливаем перебор, если был
       return;
     }
 
@@ -242,12 +232,13 @@
       } else if (tapCount >= 2) {
         takeOrder(); // 2 тапа
       }
-      tapCount = 0; // Сброс
-    }, 400); // Ждем 400 мс, чтобы понять, был ли второй тап
+      tapCount = 0;
+    }, 400);
   });
 
-  // Запуск отрисовки
+  // === ЗАПУСК ===
   renderMenu();
+  speakInstructions(); // Озвучиваем настройки при старте
 
 </script>
 </body>
