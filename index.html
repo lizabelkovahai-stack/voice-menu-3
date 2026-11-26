@@ -16,7 +16,7 @@
   .block { background: #222; border: 2px solid #d4af37; border-radius: 12px; padding: 15px; text-align: center; }
   .block-title { font-size: 22px; font-weight: bold; color: #d4af37; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
   .block-items { font-size: 16px; color: #ccc; line-height: 1.4; }
-  .status { margin-top: 20px; text-align: center; color: #888; font-size: 14px; pointer-events: none; }
+  .status { margin-top: 20px; text-align: center; color: #4dabf7; font-size: 16px; font-weight: bold; pointer-events: none; min-height: 24px; }
 </style>
 </head>
 <body>
@@ -63,9 +63,9 @@
   }
 
   let isSpeaking = false;
-  let isReadingAll = false; // Читаем ли мы меню подряд
+  let isReadingAll = false; 
   let currentIndex = 0;
-  let micShouldBeOn = false; // Должен ли микрофон работать
+  let micShouldBeOn = false; 
   
   const synth = window.speechSynthesis;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -85,7 +85,7 @@
 
   function speak(text, onEndCallback) {
     if (!synth) return;
-    synth.cancel(); // Обрываем предыдущую речь
+    synth.cancel(); 
     isSpeaking = true;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'ru-RU';
@@ -97,18 +97,10 @@
     synth.speak(u);
   }
 
-  // === НАСТРОЙКИ ===
-  function speakInstructions() {
-    micShouldBeOn = false; // Пока не слушаем
-    speak("Добро пожаловать в меню ресторана Интурист. Нажмите один раз на экран, чтобы прослушать всё меню. Нажмите два раза, чтобы сделать заказ. Во время чтения скажите 'Дальше', чтобы перейти к следующему блюду.");
-    document.getElementById('status').textContent = "1 тап — меню. 2 тапа — заказ.";
-  }
-
-  // === ЧТЕНИЕ ВСЕГО МЕНЮ ===
   function readAll() {
     isReadingAll = true;
     currentIndex = 0;
-    micShouldBeOn = true; // ВКЛЮЧАЕМ МИКРОФОН В ФОНЕ
+    micShouldBeOn = true; 
     startListening();
     readCurrentDish();
   }
@@ -116,36 +108,33 @@
   function readCurrentDish() {
     if (!isReadingAll || currentIndex >= flatMenu.length) {
       isReadingAll = false;
-      speak("Конец меню. Скажите 'Дальше' для начала, или нажмите два раза для заказа.");
+      micShouldBeOn = false;
+      speak("Конец меню. Нажмите два раза для заказа.");
       return;
     }
     const item = flatMenu[currentIndex];
+    // Небольшая пауза перед чтением, чтобы микрофон успел включиться
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`, () => {
       if (isReadingAll) {
         currentIndex++;
-        readCurrentDish();
+        setTimeout(readCurrentDish, 300); // Пауза 0.3 сек
       }
     });
   }
 
-  // === КОМАНДА ДАЛЬШЕ ===
   function nextDishVoice() {
     isReadingAll = true;
     currentIndex++;
-    if (currentIndex >= flatMenu.length) currentIndex = 0; // По кругу
-    readCurrentDish(); // Обрывает старую речь и читает новую
+    if (currentIndex >= flatMenu.length) currentIndex = 0;
+    synth.cancel(); // Обрываем робота
+    readCurrentDish(); 
   }
 
-  // === ЗАКАЗ ===
   function takeOrder() {
     isReadingAll = false;
     micShouldBeOn = true;
     startListening();
-    speak("Выберите блюдо. Говорите.", () => {
-      if (recognition && !micShouldBeOn) { // Если микрофон отключился во время речи, включаем снова
-        startListening();
-      }
-    });
+    speak("Выберите блюдо. Говорите.");
   }
 
   function findDish(spokenText) {
@@ -168,44 +157,47 @@
     return maxMatches > 0 ? bestMatch : null;
   }
 
-  // === МИКРОФОН ===
   if (SR) {
     recognition = new SR();
     recognition.lang = 'ru-RU';
-    recognition.interimResults = false;
+    recognition.interimResults = true; // ВАЖНО: ловим слова на лету
     recognition.maxAlternatives = 1;
     
-    recognition.onstart = () => { document.getElementById('status').textContent = "Слушаю..."; };
+    recognition.onstart = () => { 
+      document.getElementById('status').textContent = "Слушаю..."; 
+    };
     
     recognition.onend = () => {
-      // Если микрофон должен быть включен, но браузер его выключил (бывает после каждой фразы) — ВКЛЮЧАЕМ СНОВА
+      // Принудительно перезапускаем микрофон, если он нужен
       if (micShouldBeOn) {
-        try { recognition.start(); } catch(e) {}
+        setTimeout(() => {
+          try { recognition.start(); } catch(e) {}
+        }, 200);
       } else {
-        document.getElementById('status').textContent = "1 тап — меню. 2 тапа — заказ.";
+        document.getElementById('status').textContent = "Ожидание...";
       }
     };
     
     recognition.onresult = (event) => {
       const t = event.results[0][0].transcript.toLowerCase().trim();
       
-      // Команда "Дальше"
-      if (t.includes('дальше') || t.includes('следующ')) {
+      // Показываем на экране, что услышал робот (чтобы проверить)
+      document.getElementById('status').textContent = `Услышала: "${t}"`;
+      
+      // Проверяем команду "Дальше" (очень мягкий поиск)
+      if (t.includes('дал') || t.includes('след') || t.includes('далее')) {
         nextDishVoice();
         return;
       }
 
-      // Заказ блюда
-      const dish = findDish(t);
-      if (dish) {
-        isReadingAll = false; // Останавливаем чтение
-        micShouldBeOn = false; // Выключаем микрофон, заказ принят
-        synth.cancel(); // Обрываем робота
-        speak("Заказ принят. Вы выбрали " + dish.name + " из раздела " + dish.category + ".");
-        document.getElementById('status').textContent = "Заказ принят: " + dish.name;
-      } else {
-        if (!isReadingAll) { // Если мы не читаем меню, а ждем заказ
-          speak("Я не расслышала. Повторите или нажмите два раза.");
+      // Если мы ждем заказ, ищем блюдо
+      if (!isReadingAll) {
+        const dish = findDish(t);
+        if (dish) {
+          micShouldBeOn = false; 
+          synth.cancel(); 
+          speak("Заказ принят. Вы выбрали " + dish.name + " из раздела " + dish.category + ".");
+          document.getElementById('status').textContent = "Заказ принят!";
         }
       }
     };
@@ -217,18 +209,16 @@
     }
   }
 
-  // === ТАПЫ ===
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
-    // Если робот говорит, клик просто останавливает его
     if (isSpeaking) {
       synth.cancel();
       isSpeaking = false;
       isReadingAll = false; 
       micShouldBeOn = false;
-      document.getElementById('status').textContent = "Остановлено. Тапните еще раз.";
+      document.getElementById('status').textContent = "Остановлено.";
       return;
     }
 
@@ -246,7 +236,10 @@
   });
 
   renderMenu();
-  speakInstructions();
+  // Приветствие
+  setTimeout(() => {
+    speak("Меню Интурист. Один тап - слушать. Два тапа - заказ. Скажите 'Дальше' чтобы листать.");
+  }, 500);
 
 </script>
 </body>
