@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Меню Интурист</title>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: system-ui, sans-serif;
+    margin: 0; padding: 15px; background: #1a1a1a; color: #fff;
+    min-height: 100vh; display: flex; flex-direction: column; justify-content: center; user-select: none;
+  }
+  
+  /* Зона для тапов на весь экран */
+  .tap-zone { position: fixed; inset: 0; z-index: 9999; cursor: pointer; }
+
+  /* Три блока меню */
+  .menu-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 500px;
+    margin: 0 auto;
+    pointer-events: none;
+  }
+
+  .block {
+    background: #222;
+    border: 2px solid #d4af37; /* Золотистый цвет под стиль ресторана */
+    border-radius: 12px;
+    padding: 15px;
+    text-align: center;
+  }
+
+  .block-title { 
+    font-size: 22px; 
+    font-weight: bold; 
+    color: #d4af37; 
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  
+  .block-items { 
+    font-size: 16px; 
+    color: #ccc; 
+    line-height: 1.4; 
+  }
+
+  /* Статус внизу */
+  .status {
+    margin-top: 20px; text-align: center; color: #888; font-size: 14px; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="tap-zone" id="tapZone"></div>
+
+<!-- Блоки меню будут построены через JS -->
+<div class="menu-container" id="menuContainer"></div>
+
+<div class="status" id="status">1 тап — слушать меню. 2 тапа — сделать заказ.</div>
+
+<script>
+  // === ДАННЫЕ ИЗ PDF ===
+  const menuData = {
+    "Завтрак": [
+      { name: "Каша овсяная Тирамису", price: 750 },
+      { name: "Рисовая каша с копченой грушей", price: 750 },
+      { name: "Кукурузная каша с пюре манго", price: 650 },
+      { name: "Омлет с крабом", price: 1100 },
+      { name: "Омлет четыре сыра", price: 990 },
+      { name: "Омлет с ветчиной и беконом", price: 690 },
+      { name: "Драники из цукини с лососем", price: 690 },
+      { name: "Скрембл на бриоше с авокадо и лососем", price: 890 }
+    ],
+    "Салаты": [
+      { name: "Салат с семгой и гребешком", price: 1200 },
+      { name: "Буратта с томатами", price: 890 },
+      { name: "Салат Дальневосточный с говядиной", price: 890 },
+      { name: "Салат Оливье с языком", price: 790 },
+      { name: "Салат Мимоза с семгой", price: 790 },
+      { name: "Папоротник с говядиной", price: 780 }
+    ],
+    "Супы": [
+      { name: "Том Ям", price: 1200 },
+      { name: "Уха из амурской рыбы", price: 990 },
+      { name: "Крем суп из сельдерея", price: 970 },
+      { name: "Куриный бульон с яйцом пашот", price: 650 },
+      { name: "Борщ с говядиной и пампушкой", price: 780 },
+      { name: "Суп сырный в хлебной тарелке", price: 680 }
+    ]
+  };
+
+  let isSpeaking = false;
+  let isListening = false;
+  const synth = window.speechSynthesis;
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let recognition = null;
+
+  // === ОТРИСОВКА БЛОКОВ НА ЭКРАНЕ ===
+  function renderMenu() {
+    const container = document.getElementById('menuContainer');
+    for (let section in menuData) {
+      const block = document.createElement('div');
+      block.className = 'block';
+      
+      const title = document.createElement('div');
+      title.className = 'block-title';
+      title.textContent = section;
+      
+      const items = document.createElement('div');
+      items.className = 'block-items';
+      // Выводим названия блюд через запятую
+      items.textContent = menuData[section].map(item => item.name).join(', ');
+      
+      block.appendChild(title);
+      block.appendChild(items);
+      container.appendChild(block);
+    }
+  }
+
+  // === ОЗВУЧКА ===
+  function speak(text, onEndCallback) {
+    if (!synth) return;
+    synth.cancel(); 
+    isSpeaking = true;
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'ru-RU';
+    u.rate = 1.0;
+    u.onend = () => {
+      isSpeaking = false;
+      if (onEndCallback) onEndCallback();
+    };
+    synth.speak(u);
+  }
+
+  // === 1 ТАП: ПЕРЕЧИСЛИТЬ ВСЁ ===
+  function readAll() {
+    let text = "Меню ресторана Интурист. ";
+    for (let section in menuData) {
+      text += section + ". ";
+      for (let item of menuData[section]) {
+        text += item.name + ", " + item.price + " рублей. ";
+      }
+      text += " "; // пауза между разделами
+    }
+    text += "Чтобы сделать заказ, нажмите два раза по экрану.";
+    speak(text);
+  }
+
+  // === 2 ТАПА: СДЕЛАТЬ ЗАКАЗ ===
+  function takeOrder() {
+    speak("Выберите блюдо. Говорите.", () => {
+      // Как только робот закончил говорить, включаем микрофон
+      if (recognition && !isListening) {
+        try { recognition.start(); } catch(e) {}
+      }
+    });
+  }
+
+  // === ПОИСК БЛЮДА В ТЕКСТЕ ===
+  function findDish(spokenText) {
+    let bestMatch = null;
+    let maxMatches = 0;
+    
+    // Разбиваем то, что сказал человек, на слова (длиннее 2 букв)
+    const spokenWords = spokenText.toLowerCase().split(' ').filter(w => w.length > 2);
+    
+    for (let category in menuData) {
+      for (let item of menuData[category]) {
+        // Разбиваем название блюда на слова
+        const itemWords = item.name.toLowerCase().replace(/[^а-яё\s]/g, '').split(' ').filter(w => w.length > 2);
+        let matches = 0;
+        
+        // Считаем, сколько слов совпало
+        for (let w of spokenWords) {
+          if (itemWords.some(iw => iw.includes(w) || w.includes(iw))) {
+            matches++;
+          }
+        }
+        
+        // Запоминаем блюдо с наибольшим числом совпадений
+        if (matches > maxMatches) {
+          maxMatches = matches;
+          bestMatch = { ...item, category };
+        }
+      }
+    }
+    
+    // Если совпало хотя бы одно слово (например, сказали "Краб" для "Омлет с крабом")
+    if (maxMatches > 0) return bestMatch;
+    return null;
+  }
+
+  // === МИКРОФОН ===
+  if (SR) {
+    recognition = new SR();
+    recognition.lang = 'ru-RU';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+    recognition.onstart = () => { isListening = true; };
+    recognition.onend = () => { isListening = false; };
+    
+    recognition.onresult = (event) => {
+      const t = event.results[0][0].transcript.toLowerCase().trim();
+      
+      // Ищем блюдо
+      const dish = findDish(t);
+      
+      if (dish) {
+        // Нашли блюдо!
+        speak("Заказ принят. Вы выбрали " + dish.name + " из раздела " + dish.category + ".");
+        document.getElementById('status').textContent = "Заказ принят: " + dish.name;
+      } else {
+        // Не нашли
+        speak("Я не расслышала заказ. Нажмите два раза и повторите.");
+      }
+    };
+  }
+
+  // === ОБРАБОТКА ТАПОВ (1 тап / 2 тапа) ===
+  let tapCount = 0;
+  let tapTimer = null;
+
+  document.getElementById('tapZone').addEventListener('click', () => {
+    // Если робот говорит, клик просто останавливает его
+    if (isSpeaking) {
+      synth.cancel();
+      isSpeaking = false;
+      return;
+    }
+
+    tapCount++;
+    if (tapTimer) clearTimeout(tapTimer);
+
+    tapTimer = setTimeout(() => {
+      if (tapCount === 1) {
+        readAll(); // 1 тап
+      } else if (tapCount >= 2) {
+        takeOrder(); // 2 тапа
+      }
+      tapCount = 0; // Сброс
+    }, 400); // Ждем 400 мс, чтобы понять, был ли второй тап
+  });
+
+  // Запуск отрисовки
+  renderMenu();
+
+</script>
+</body>
+</html>
