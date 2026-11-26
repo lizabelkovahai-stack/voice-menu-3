@@ -26,7 +26,6 @@
 <div class="status" id="status">Загрузка...</div>
 
 <script>
-  // === ДАННЫЕ ИЗ PDF ===
   const menuData = {
     "Завтрак": [
       { name: "Каша овсяная Тирамису", price: 750 },
@@ -56,7 +55,6 @@
     ]
   };
 
-  // Создаем плоский список всех блюд для команды "Дальше"
   let flatMenu = [];
   for (let section in menuData) {
     for (let item of menuData[section]) {
@@ -65,37 +63,29 @@
   }
 
   let isSpeaking = false;
-  let isListening = false;
-  let isReadingAll = false; // Флаг: читаем ли мы сейчас все меню подряд
-  let currentIndex = -1;    // На каком блюде мы остановились
+  let isReadingAll = false; // Читаем ли мы меню подряд
+  let currentIndex = 0;
+  let micShouldBeOn = false; // Должен ли микрофон работать
   
   const synth = window.speechSynthesis;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
 
-  // === ОТРИСОВКА БЛОКОВ ===
   function renderMenu() {
     const container = document.getElementById('menuContainer');
     container.innerHTML = '';
     for (let section in menuData) {
       const block = document.createElement('div');
       block.className = 'block';
-      const title = document.createElement('div');
-      title.className = 'block-title';
-      title.textContent = section;
-      const items = document.createElement('div');
-      items.className = 'block-items';
-      items.textContent = menuData[section].map(item => item.name).join(', ');
-      block.appendChild(title);
-      block.appendChild(items);
+      block.innerHTML = `<div class="block-title">${section}</div>
+                         <div class="block-items">${menuData[section].map(i => i.name).join(', ')}</div>`;
       container.appendChild(block);
     }
   }
 
-  // === ОЗВУЧКА ===
   function speak(text, onEndCallback) {
     if (!synth) return;
-    synth.cancel(); 
+    synth.cancel(); // Обрываем предыдущую речь
     isSpeaking = true;
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'ru-RU';
@@ -107,16 +97,19 @@
     synth.speak(u);
   }
 
-  // === ПРИВЕТСТВИЕ (НАСТРОЙКИ) ===
+  // === НАСТРОЙКИ ===
   function speakInstructions() {
+    micShouldBeOn = false; // Пока не слушаем
     speak("Добро пожаловать в меню ресторана Интурист. Нажмите один раз на экран, чтобы прослушать всё меню. Нажмите два раза, чтобы сделать заказ. Во время чтения скажите 'Дальше', чтобы перейти к следующему блюду.");
-    document.getElementById('status').textContent = "1 тап — слушать меню. 2 тапа — сделать заказ. Скажите 'Дальше' для листания.";
+    document.getElementById('status').textContent = "1 тап — меню. 2 тапа — заказ.";
   }
 
-  // === 1 ТАП: ПЕРЕЧИСЛИТЬ ВСЁ (С ВОЗМОЖНОСТЬЮ ЛИСТАТЬ) ===
+  // === ЧТЕНИЕ ВСЕГО МЕНЮ ===
   function readAll() {
     isReadingAll = true;
     currentIndex = 0;
+    micShouldBeOn = true; // ВКЛЮЧАЕМ МИКРОФОН В ФОНЕ
+    startListening();
     readCurrentDish();
   }
 
@@ -135,40 +128,36 @@
     });
   }
 
-  // === КОМАНДА "ДАЛЬШЕ" ===
+  // === КОМАНДА ДАЛЬШЕ ===
   function nextDishVoice() {
-    isReadingAll = true; // Продолжаем режим чтения
+    isReadingAll = true;
     currentIndex++;
-    if (currentIndex >= flatMenu.length) {
-      currentIndex = 0; // По кругу
-    }
-    readCurrentDish();
+    if (currentIndex >= flatMenu.length) currentIndex = 0; // По кругу
+    readCurrentDish(); // Обрывает старую речь и читает новую
   }
 
-  // === 2 ТАПА: СДЕЛАТЬ ЗАКАЗ ===
+  // === ЗАКАЗ ===
   function takeOrder() {
-    isReadingAll = false; // Останавливаем чтение всего меню
+    isReadingAll = false;
+    micShouldBeOn = true;
+    startListening();
     speak("Выберите блюдо. Говорите.", () => {
-      if (recognition && !isListening) {
-        try { recognition.start(); } catch(e) {}
+      if (recognition && !micShouldBeOn) { // Если микрофон отключился во время речи, включаем снова
+        startListening();
       }
     });
   }
 
-  // === ПОИСК БЛЮДА В ТЕКСТЕ ===
   function findDish(spokenText) {
     let bestMatch = null;
     let maxMatches = 0;
     const spokenWords = spokenText.toLowerCase().split(' ').filter(w => w.length > 2);
-    
     for (let category in menuData) {
       for (let item of menuData[category]) {
         const itemWords = item.name.toLowerCase().replace(/[^а-яё\s]/g, '').split(' ').filter(w => w.length > 2);
         let matches = 0;
         for (let w of spokenWords) {
-          if (itemWords.some(iw => iw.includes(w) || w.includes(iw))) {
-            matches++;
-          }
+          if (itemWords.some(iw => iw.includes(w) || w.includes(iw))) matches++;
         }
         if (matches > maxMatches) {
           maxMatches = matches;
@@ -176,8 +165,7 @@
         }
       }
     }
-    if (maxMatches > 0) return bestMatch;
-    return null;
+    return maxMatches > 0 ? bestMatch : null;
   }
 
   // === МИКРОФОН ===
@@ -186,40 +174,61 @@
     recognition.lang = 'ru-RU';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
-    recognition.onstart = () => { isListening = true; };
-    recognition.onend = () => { isListening = false; };
+    
+    recognition.onstart = () => { document.getElementById('status').textContent = "Слушаю..."; };
+    
+    recognition.onend = () => {
+      // Если микрофон должен быть включен, но браузер его выключил (бывает после каждой фразы) — ВКЛЮЧАЕМ СНОВА
+      if (micShouldBeOn) {
+        try { recognition.start(); } catch(e) {}
+      } else {
+        document.getElementById('status').textContent = "1 тап — меню. 2 тапа — заказ.";
+      }
+    };
     
     recognition.onresult = (event) => {
       const t = event.results[0][0].transcript.toLowerCase().trim();
       
-      // Проверяем команду "Дальше"
+      // Команда "Дальше"
       if (t.includes('дальше') || t.includes('следующ')) {
         nextDishVoice();
         return;
       }
 
-      // Ищем блюдо
+      // Заказ блюда
       const dish = findDish(t);
       if (dish) {
         isReadingAll = false; // Останавливаем чтение
+        micShouldBeOn = false; // Выключаем микрофон, заказ принят
+        synth.cancel(); // Обрываем робота
         speak("Заказ принят. Вы выбрали " + dish.name + " из раздела " + dish.category + ".");
         document.getElementById('status').textContent = "Заказ принят: " + dish.name;
       } else {
-        speak("Я не расслышала заказ. Нажмите два раза и повторите.");
+        if (!isReadingAll) { // Если мы не читаем меню, а ждем заказ
+          speak("Я не расслышала. Повторите или нажмите два раза.");
+        }
       }
     };
   }
 
-  // === ОБРАБОТКА ТАПОВ ===
+  function startListening() {
+    if (recognition && micShouldBeOn) {
+      try { recognition.start(); } catch(e) {}
+    }
+  }
+
+  // === ТАПЫ ===
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
-    // Если робот говорит, клик останавливает его
+    // Если робот говорит, клик просто останавливает его
     if (isSpeaking) {
       synth.cancel();
       isSpeaking = false;
-      isReadingAll = false; // Останавливаем перебор, если был
+      isReadingAll = false; 
+      micShouldBeOn = false;
+      document.getElementById('status').textContent = "Остановлено. Тапните еще раз.";
       return;
     }
 
@@ -228,17 +237,16 @@
 
     tapTimer = setTimeout(() => {
       if (tapCount === 1) {
-        readAll(); // 1 тап
+        readAll(); 
       } else if (tapCount >= 2) {
-        takeOrder(); // 2 тапа
+        takeOrder(); 
       }
       tapCount = 0;
     }, 400);
   });
 
-  // === ЗАПУСК ===
   renderMenu();
-  speakInstructions(); // Озвучиваем настройки при старте
+  speakInstructions();
 
 </script>
 </body>
