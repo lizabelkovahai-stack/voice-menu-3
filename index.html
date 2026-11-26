@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Меню Интурист</title>
+<title>Меню Интурист 2026</title>
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   body {
@@ -12,20 +12,21 @@
     min-height: 100vh; display: flex; flex-direction: column; justify-content: center; user-select: none;
   }
   .tap-zone { position: fixed; inset: 0; z-index: 9999; cursor: pointer; }
-  .menu-container { display: flex; flex-direction: column; gap: 12px; max-width: 500px; margin: 0 auto; pointer-events: none; }
-  .block { background: #222; border: 2px solid #d4af37; border-radius: 12px; padding: 15px; text-align: center; }
-  .block-title { font-size: 22px; font-weight: bold; color: #d4af37; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
-  .block-items { font-size: 16px; color: #ccc; line-height: 1.4; }
-  .status { margin-top: 20px; text-align: center; color: #4dabf7; font-size: 16px; font-weight: bold; pointer-events: none; min-height: 24px; }
+  .menu-container { display: flex; flex-direction: column; gap: 10px; max-width: 500px; margin: 0 auto; pointer-events: none; }
+  .block { background: #222; border: 2px solid #d4af37; border-radius: 12px; padding: 12px; text-align: center; }
+  .block-title { font-size: 20px; font-weight: bold; color: #d4af37; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
+  .block-items { font-size: 14px; color: #ccc; line-height: 1.4; }
+  .status { margin-top: 15px; text-align: center; color: #4dabf7; font-size: 16px; font-weight: bold; pointer-events: none; min-height: 24px; }
 </style>
 </head>
 <body>
 
 <div class="tap-zone" id="tapZone"></div>
 <div class="menu-container" id="menuContainer"></div>
-<div class="status" id="status">Загрузка...</div>
+<div class="status" id="status">Загрузка меню...</div>
 
 <script>
+  // === ПОЛНОЕ МЕНЮ ИЗ PDF ===
   const menuData = {
     "Завтрак": [
       { name: "Каша овсяная Тирамису", price: 750 },
@@ -35,15 +36,37 @@
       { name: "Омлет четыре сыра", price: 990 },
       { name: "Омлет с ветчиной и беконом", price: 690 },
       { name: "Драники из цукини с лососем", price: 690 },
-      { name: "Скрембл на бриоше с авокадо и лососем", price: 890 }
+      { name: "Скрембл на бриоше с авокадо и лососем", price: 890 },
+      { name: "Яичница с беконом", price: 480 },
+      { name: "Хрустящие яйца", price: 540 },
+      { name: "Брускетта с авокадо и яйцом пашот", price: 590 },
+      { name: "Сырники с рикоттой", price: 750 },
+      { name: "Блины классические", price: 350 }
+    ],
+    "Закуски": [
+      { name: "Тала из осетра", price: 2400 },
+      { name: "Сырная тарелка", price: 1950 },
+      { name: "Мясное плато из сыровялов", price: 1950 },
+      { name: "Ассорти из мини эклеров", price: 840 },
+      { name: "Баклажаны Интурист", price: 740 },
+      { name: "Сельдь собственного посола", price: 740 },
+      { name: "Битые огурцы", price: 350 },
+      { name: "Овощные соленья", price: 590 },
+      { name: "Икра щучья в рожках", price: 730 },
+      { name: "Икра красная", price: 1650 }
     ],
     "Салаты": [
-      { name: "Салат с семгой и гребешком", price: 1200 },
+      { name: "Салат с семгой, гребешком и рукколой", price: 1200 },
       { name: "Буратта с томатами", price: 890 },
       { name: "Салат Дальневосточный с говядиной", price: 890 },
       { name: "Салат Оливье с языком", price: 790 },
       { name: "Салат Мимоза с семгой", price: 790 },
-      { name: "Папоротник с говядиной", price: 780 }
+      { name: "Папоротник с говядиной", price: 780 },
+      { name: "Салат с баклажанами", price: 680 },
+      { name: "Сыр страчателла", price: 300 },
+      { name: "Овощной салат", price: 560 },
+      { name: "Микс с куриной грудкой", price: 850 },
+      { name: "Микс с креветкой", price: 980 }
     ],
     "Супы": [
       { name: "Том Ям", price: 1200 },
@@ -52,9 +75,60 @@
       { name: "Куриный бульон с яйцом пашот", price: 650 },
       { name: "Борщ с говядиной и пампушкой", price: 780 },
       { name: "Суп сырный в хлебной тарелке", price: 680 }
+    ],
+    "Основной курс": [
+      { name: "Оленина с кедровой кашей", price: 2300 },
+      { name: "Мясной рулет Бернуазет", price: 2100 },
+      { name: "Бургер таежный из оленины", price: 1300 },
+      { name: "Миньон со шпинатом и фуагра", price: 2100 },
+      { name: "Телячьи щечки с картофельным пюре", price: 980 },
+      { name: "Язык говяжий с картофельным пюре", price: 1100 },
+      { name: "Щучьи котлеты со сливочным орзо", price: 980 },
+      { name: "Куриная грудка со шпинатом", price: 950 },
+      { name: "Лосось с соусом чимичурри", price: 1800 },
+      { name: "Палтус в сиропе саган-дайля", price: 1900 },
+      { name: "Чахан с морепродуктами", price: 750 }
+    ],
+    "Лепка": [
+      { name: "Таежные пельмени с олениной", price: 1200 },
+      { name: "Пельмени с чернилами каракатицы", price: 1250 },
+      { name: "Пельмени Интурист в горшочке", price: 780 },
+      { name: "Вареники с картофелем и беконом", price: 580 },
+      { name: "Вареники с капустой", price: 580 },
+      { name: "Вареники с творогом", price: 580 }
+    ],
+    "Пицца": [
+      { name: "Пицца Ветчина и грибы", price: 740 },
+      { name: "Пицца Четыре сыра", price: 880 },
+      { name: "Пицца Мясная", price: 840 },
+      { name: "Пицца Том Ям", price: 990 },
+      { name: "Пицца Пепперони", price: 680 },
+      { name: "Пицца Грибная", price: 730 },
+      { name: "Пицца Деревенская", price: 740 },
+      { name: "Пицца Маргарита", price: 690 }
+    ],
+    "Десерты": [
+      { name: "Груша в миндальном финансье", price: 950 },
+      { name: "Павлова на бисквите", price: 630 },
+      { name: "Меренга с сорбетом", price: 580 },
+      { name: "Торт Медовый", price: 540 },
+      { name: "Торт Наполеон", price: 540 },
+      { name: "Черничный пирог", price: 540 },
+      { name: "Семифредо", price: 540 },
+      { name: "Мороженое", price: 350 }
+    ],
+    "Гарниры": [
+      { name: "Батат фри с сыром пармезан", price: 680 },
+      { name: "Овощи гриль", price: 600 },
+      { name: "Капуста цветная и брокколи", price: 400 },
+      { name: "Картофельное пюре", price: 400 },
+      { name: "Картофель запеченный айдахо", price: 400 },
+      { name: "Картофель фри", price: 400 },
+      { name: "Рис отварной", price: 400 }
     ]
   };
 
+  // Делаем плоский список для удобного перелистывания
   let flatMenu = [];
   for (let section in menuData) {
     for (let item of menuData[section]) {
@@ -62,15 +136,13 @@
     }
   }
 
-  let isSpeaking = false;
-  let isReadingAll = false; 
   let currentIndex = 0;
-  let micShouldBeOn = false; 
-  
-  const synth = window.speechSynthesis;
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
+  let isSpeaking = false;
+  let isReadingAll = false;
 
+  const synth = window.speechSynthesis;
+
+  // Отрисовка интерфейса
   function renderMenu() {
     const container = document.getElementById('menuContainer');
     container.innerHTML = '';
@@ -83,6 +155,7 @@
     }
   }
 
+  // Озвучка
   function speak(text, onEndCallback) {
     if (!synth) return;
     synth.cancel(); 
@@ -97,128 +170,58 @@
     synth.speak(u);
   }
 
+  // 1 ТАП: Читать всё меню с самого начала
   function readAll() {
     isReadingAll = true;
     currentIndex = 0;
-    micShouldBeOn = true; 
-    startListening();
+    document.getElementById('status').textContent = "Читаю всё меню...";
     readCurrentDish();
   }
 
+  // Читать текущее блюдо
   function readCurrentDish() {
     if (!isReadingAll || currentIndex >= flatMenu.length) {
       isReadingAll = false;
-      micShouldBeOn = false;
-      speak("Конец меню. Нажмите два раза для заказа.");
+      speak("Конец меню. Нажмите два раза, чтобы перейти в начало, или один раз для повтора.");
+      document.getElementById('status').textContent = "Конец меню.";
       return;
     }
     const item = flatMenu[currentIndex];
-    // Небольшая пауза перед чтением, чтобы микрофон успел включиться
+    
+    // Показываем на экране, что читаем
+    document.getElementById('status').textContent = `${item.category}: ${item.name}`;
+
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`, () => {
       if (isReadingAll) {
         currentIndex++;
-        setTimeout(readCurrentDish, 300); // Пауза 0.3 сек
+        readCurrentDish(); // Переходим к следующему автоматически
       }
     });
   }
 
-  function nextDishVoice() {
-    isReadingAll = true;
+  // 2 ТАПА: Перейти к следующему блюду
+  function readNext() {
+    isReadingAll = false; // Отключаем авточтение всего
     currentIndex++;
-    if (currentIndex >= flatMenu.length) currentIndex = 0;
-    synth.cancel(); // Обрываем робота
-    readCurrentDish(); 
-  }
-
-  function takeOrder() {
-    isReadingAll = false;
-    micShouldBeOn = true;
-    startListening();
-    speak("Выберите блюдо. Говорите.");
-  }
-
-  function findDish(spokenText) {
-    let bestMatch = null;
-    let maxMatches = 0;
-    const spokenWords = spokenText.toLowerCase().split(' ').filter(w => w.length > 2);
-    for (let category in menuData) {
-      for (let item of menuData[category]) {
-        const itemWords = item.name.toLowerCase().replace(/[^а-яё\s]/g, '').split(' ').filter(w => w.length > 2);
-        let matches = 0;
-        for (let w of spokenWords) {
-          if (itemWords.some(iw => iw.includes(w) || w.includes(iw))) matches++;
-        }
-        if (matches > maxMatches) {
-          maxMatches = matches;
-          bestMatch = { ...item, category };
-        }
-      }
+    if (currentIndex >= flatMenu.length) {
+      currentIndex = 0; // По кругу
     }
-    return maxMatches > 0 ? bestMatch : null;
+    const item = flatMenu[currentIndex];
+    document.getElementById('status').textContent = `Следующее: ${item.category} - ${item.name}`;
+    speak(`${item.category}. ${item.name}, ${item.price} рублей.`);
   }
 
-  if (SR) {
-    recognition = new SR();
-    recognition.lang = 'ru-RU';
-    recognition.interimResults = true; // ВАЖНО: ловим слова на лету
-    recognition.maxAlternatives = 1;
-    
-    recognition.onstart = () => { 
-      document.getElementById('status').textContent = "Слушаю..."; 
-    };
-    
-    recognition.onend = () => {
-      // Принудительно перезапускаем микрофон, если он нужен
-      if (micShouldBeOn) {
-        setTimeout(() => {
-          try { recognition.start(); } catch(e) {}
-        }, 200);
-      } else {
-        document.getElementById('status').textContent = "Ожидание...";
-      }
-    };
-    
-    recognition.onresult = (event) => {
-      const t = event.results[0][0].transcript.toLowerCase().trim();
-      
-      // Показываем на экране, что услышал робот (чтобы проверить)
-      document.getElementById('status').textContent = `Услышала: "${t}"`;
-      
-      // Проверяем команду "Дальше" (очень мягкий поиск)
-      if (t.includes('дал') || t.includes('след') || t.includes('далее')) {
-        nextDishVoice();
-        return;
-      }
-
-      // Если мы ждем заказ, ищем блюдо
-      if (!isReadingAll) {
-        const dish = findDish(t);
-        if (dish) {
-          micShouldBeOn = false; 
-          synth.cancel(); 
-          speak("Заказ принят. Вы выбрали " + dish.name + " из раздела " + dish.category + ".");
-          document.getElementById('status').textContent = "Заказ принят!";
-        }
-      }
-    };
-  }
-
-  function startListening() {
-    if (recognition && micShouldBeOn) {
-      try { recognition.start(); } catch(e) {}
-    }
-  }
-
+  // Обработка тапов
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
+    // Если робот говорит, клик просто останавливает его
     if (isSpeaking) {
       synth.cancel();
       isSpeaking = false;
       isReadingAll = false; 
-      micShouldBeOn = false;
-      document.getElementById('status').textContent = "Остановлено.";
+      document.getElementById('status').textContent = "Остановлено. 1 тап - читать всё, 2 тапа - следующее.";
       return;
     }
 
@@ -227,18 +230,21 @@
 
     tapTimer = setTimeout(() => {
       if (tapCount === 1) {
-        readAll(); 
+        readAll(); // 1 тап
       } else if (tapCount >= 2) {
-        takeOrder(); 
+        readNext(); // 2 тапа
       }
       tapCount = 0;
     }, 400);
   });
 
+  // Запуск
   renderMenu();
+  
   // Приветствие
   setTimeout(() => {
-    speak("Меню Интурист. Один тап - слушать. Два тапа - заказ. Скажите 'Дальше' чтобы листать.");
+    speak("Меню Интурист. Один тап: прочитать всё меню. Два тапа: перейти к следующему блюду.");
+    document.getElementById('status').textContent = "1 тап - читать всё, 2 тапа - следующее.";
   }, 500);
 
 </script>
