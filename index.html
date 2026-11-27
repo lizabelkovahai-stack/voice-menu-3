@@ -26,21 +26,15 @@
 <div class="status" id="status">Загрузка...</div>
 
 <script>
-  // === ПОЛНОЕ МЕНЮ ИЗ PDF ===
+  // === МЕНЮ ===
   const menuData = {
     "Завтрак": [
-      { name: "Каша овсяная Тирамису", price: 750 },
-      { name: "Рисовая каша с копченой грушей", price: 750 },
-      { name: "Кукурузная каша с пюре из манго и ягодами", price: 650 },
-      { name: "Омлет с крабом", price: 1100 },
-      { name: "Омлет четыре сыра", price: 990 },
-      { name: "Омлет с ветчиной и беконом", price: 690 },
-      { name: "Драники из цукини с лососем", price: 690 },
-      { name: "Скрембл на бриоше с авокадо и лососем", price: 890 },
-      { name: "Яичница с беконом", price: 480 },
-      { name: "Хрустящие яйца", price: 540 },
-      { name: "Брускетта с авокадо и яйцом пашот", price: 590 },
-      { name: "Сырники с рикоттой", price: 750 },
+      { name: "Каша овсяная Тирамису", price: 750 }, { name: "Рисовая каша с копченой грушей", price: 750 },
+      { name: "Кукурузная каша с пюре из манго и ягодами", price: 650 }, { name: "Омлет с крабом", price: 1100 },
+      { name: "Омлет четыре сыра", price: 990 }, { name: "Омлет с ветчиной и беконом", price: 690 },
+      { name: "Драники из цукини с лососем", price: 690 }, { name: "Скрембл на бриоше с авокадо и лососем", price: 890 },
+      { name: "Яичница с беконом", price: 480 }, { name: "Хрустящие яйца", price: 540 },
+      { name: "Брускетта с авокадо и яйцом пашот", price: 590 }, { name: "Сырники с рикоттой", price: 750 },
       { name: "Блины классические", price: 350 }
     ],
     "Добавки": [
@@ -49,87 +43,54 @@
       { name: "Сыр страчателла", price: 300 }
     ],
     "Закуски": [
-      { name: "Тала из осетра", price: 2400 },
-      { name: "Сырная тарелка", price: 1950 },
-      { name: "Мясное плато из сыровялов", price: 1950 },
-      { name: "Ассорти из мини эклеров", price: 840 },
-      { name: "Баклажаны Интурист", price: 740 },
-      { name: "Сельдь собственного посола", price: 740 },
-      { name: "Битые огурцы", price: 350 },
-      { name: "Овощные соленья", price: 590 },
-      { name: "Икра щучья в рожках", price: 730 },
-      { name: "Икра красная", price: 1650 }
+      { name: "Тала из осетра", price: 2400 }, { name: "Сырная тарелка", price: 1950 },
+      { name: "Мясное плато из сыровялов", price: 1950 }, { name: "Ассорти из мини эклеров", price: 840 },
+      { name: "Баклажаны Интурист", price: 740 }, { name: "Сельдь собственного посола", price: 740 },
+      { name: "Битые огурцы", price: 350 }, { name: "Овощные соленья", price: 590 },
+      { name: "Икра щучья в рожках", price: 730 }, { name: "Икра красная", price: 1650 }
     ],
     "Салаты": [
-      { name: "Салат с семгой, гребешком и рукколой", price: 1200 },
-      { name: "Буратта с томатами", price: 890 },
-      { name: "Салат Дальневосточный с говядиной", price: 890 },
-      { name: "Салат Оливье с языком", price: 790 },
-      { name: "Салат Мимоза с семгой", price: 790 },
-      { name: "Папоротник с говядиной", price: 780 },
-      { name: "Салат с баклажанами", price: 680 },
-      { name: "Овощной салат из дальневосточных помидоров", price: 560 },
-      { name: "Микс с куриной грудкой", price: 850 },
-      { name: "Микс с креветкой", price: 980 }
+      { name: "Салат с семгой, гребешком и рукколой", price: 1200 }, { name: "Буратта с томатами", price: 890 },
+      { name: "Салат Дальневосточный с говядиной", price: 890 }, { name: "Салат Оливье с языком", price: 790 },
+      { name: "Салат Мимоза с семгой", price: 790 }, { name: "Папоротник с говядиной", price: 780 },
+      { name: "Салат с баклажанами", price: 680 }, { name: "Овощной салат из дальневосточных помидоров", price: 560 },
+      { name: "Микс с куриной грудкой", price: 850 }, { name: "Микс с креветкой", price: 980 }
     ],
     "Супы": [
-      { name: "Том Ям", price: 1200 },
-      { name: "Уха из амурской рыбы", price: 990 },
-      { name: "Крем суп из сельдерея", price: 970 },
-      { name: "Куриный бульон с яйцом пашот", price: 650 },
-      { name: "Борщ с говядиной и пампушкой", price: 780 },
-      { name: "Суп сырный в хлебной тарелке", price: 680 },
-      { name: "Хлебная корзинка", price: 350 },
-      { name: "Хлебная корзинка Бородино", price: 350 }
+      { name: "Том Ям", price: 1200 }, { name: "Уха из амурской рыбы", price: 990 },
+      { name: "Крем суп из сельдерея", price: 970 }, { name: "Куриный бульон с яйцом пашот", price: 650 },
+      { name: "Борщ с говядиной и пампушкой", price: 780 }, { name: "Суп сырный в хлебной тарелке", price: 680 },
+      { name: "Хлебная корзинка", price: 350 }, { name: "Хлебная корзинка Бородино", price: 350 }
     ],
     "Основной курс": [
-      { name: "Оленина с кедровой кашей", price: 2300 },
-      { name: "Мясной рулет Бернуазет", price: 2100 },
-      { name: "Бургер таежный из оленины", price: 1300 },
-      { name: "Миньон со шпинатом и фуагра", price: 2100 },
-      { name: "Телячьи щечки с картофельным пюре", price: 980 },
-      { name: "Язык говяжий с картофельным пюре", price: 1100 },
-      { name: "Щучьи котлеты со сливочным орзо", price: 980 },
-      { name: "Куриная грудка со шпинатом", price: 950 },
-      { name: "Лосось с соусом чимичурри и спаржей", price: 1800 },
-      { name: "Палтус в сиропе саган-дайля и печенью трески", price: 1900 },
+      { name: "Оленина с кедровой кашей", price: 2300 }, { name: "Мясной рулет Бернуазет", price: 2100 },
+      { name: "Бургер таежный из оленины", price: 1300 }, { name: "Миньон со шпинатом и фуагра", price: 2100 },
+      { name: "Телячьи щечки с картофельным пюре", price: 980 }, { name: "Язык говяжий с картофельным пюре", price: 1100 },
+      { name: "Щучьи котлеты со сливочным орзо", price: 980 }, { name: "Куриная грудка со шпинатом", price: 950 },
+      { name: "Лосось с соусом чимичурри и спаржей", price: 1800 }, { name: "Палтус в сиропе саган-дайля и печенью трески", price: 1900 },
       { name: "Чахан с морепродуктами", price: 750 }
     ],
     "Лепка": [
-      { name: "Таежные пельмени с олениной", price: 1200 },
-      { name: "Пельмени с чернилами каракатицы", price: 1250 },
-      { name: "Пельмени Интурист в горшочке", price: 780 },
-      { name: "Вареники с картофелем и беконом", price: 580 },
-      { name: "Вареники с капустой", price: 580 },
-      { name: "Вареники с творогом", price: 580 }
+      { name: "Таежные пельмени с олениной", price: 1200 }, { name: "Пельмени с чернилами каракатицы", price: 1250 },
+      { name: "Пельмени Интурист в горшочке", price: 780 }, { name: "Вареники с картофелем и беконом", price: 580 },
+      { name: "Вареники с капустой", price: 580 }, { name: "Вареники с творогом", price: 580 }
     ],
     "Пицца": [
-      { name: "Ветчина и грибы", price: 740 },
-      { name: "Четыре сыра", price: 880 },
-      { name: "Мясная", price: 840 },
-      { name: "Том Ям", price: 990 },
-      { name: "Пепперони", price: 680 },
-      { name: "Грибная", price: 730 },
-      { name: "Деревенская", price: 740 },
-      { name: "Маргарита", price: 690 }
+      { name: "Ветчина и грибы", price: 740 }, { name: "Четыре сыра", price: 880 },
+      { name: "Мясная", price: 840 }, { name: "Том Ям", price: 990 },
+      { name: "Пепперони", price: 680 }, { name: "Грибная", price: 730 },
+      { name: "Деревенская", price: 740 }, { name: "Маргарита", price: 690 }
     ],
     "Десерты": [
-      { name: "Груша в миндальном финансье", price: 950 },
-      { name: "Павлова на бисквите", price: 630 },
-      { name: "Меренговый рулет", price: 580 },
-      { name: "Торт Медовый", price: 540 },
-      { name: "Торт Наполеон", price: 540 },
-      { name: "Черничный пирог", price: 540 },
-      { name: "Семифредо", price: 540 },
-      { name: "Мороженое или Сорбеты", price: 350 }
+      { name: "Груша в миндальном финансье", price: 950 }, { name: "Павлова на бисквите", price: 630 },
+      { name: "Меренговый рулет", price: 580 }, { name: "Торт Медовый", price: 540 },
+      { name: "Торт Наполеон", price: 540 }, { name: "Черничный пирог", price: 540 },
+      { name: "Семифредо", price: 540 }, { name: "Мороженое или Сорбеты", price: 350 }
     ],
     "Гарниры": [
-      { name: "Батат фри с сыром пармезан", price: 680 },
-      { name: "Овощи гриль", price: 600 },
-      { name: "Капуста цветная и брокколи", price: 400 },
-      { name: "Картофельное пюре", price: 400 },
-      { name: "Картофель запеченный айдахо", price: 400 },
-      { name: "Картофель фри", price: 400 },
+      { name: "Батат фри с сыром пармезан", price: 680 }, { name: "Овощи гриль", price: 600 },
+      { name: "Капуста цветная и брокколи", price: 400 }, { name: "Картофельное пюре", price: 400 },
+      { name: "Картофель запеченный айдахо", price: 400 }, { name: "Картофель фри", price: 400 },
       { name: "Рис отварной", price: 400 }
     ]
   };
@@ -144,9 +105,10 @@
   let currentIndex = 0;
   let isSpeaking = false;
   let isReadingAll = false;
-  let micShouldBeOn = true; // Микрофон всегда слушает в фоне
-  const synth = window.speechSynthesis;
+  let sessionId = 0; // Защита от "каши" при остановке
+  let micRunning = false;
   
+  const synth = window.speechSynthesis;
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   let recognition = null;
 
@@ -162,83 +124,99 @@
     }
   }
 
+  // УМНАЯ ОЗВУЧКА (выключает микрофон, чтобы не слышать себя)
   function speak(text, onEndCallback) {
     if (!synth) return;
+    
+    // 1. Выключаем микрофон перед речью
+    stopListening();
+
     synth.cancel(); 
     isSpeaking = true;
+    
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'ru-RU';
     u.rate = 1.0;
+    
     u.onend = () => {
       isSpeaking = false;
       if (onEndCallback) onEndCallback();
+      
+      // 2. Включаем микрофон после того, как договорили
+      startListening();
     };
+    
     synth.speak(u);
   }
 
   function readAll() {
+    sessionId++;
+    const currentSession = sessionId;
     isReadingAll = true;
     currentIndex = 0;
     document.getElementById('status').textContent = "Читаю всё меню...";
-    readCurrentDish();
+    readCurrentDish(currentSession);
   }
 
-  function readCurrentDish() {
-    if (!isReadingAll || currentIndex >= flatMenu.length) {
+  function readCurrentDish(mySession) {
+    if (!isReadingAll || mySession !== sessionId || currentIndex >= flatMenu.length) {
       isReadingAll = false;
-      speak("Конец меню.");
-      document.getElementById('status').textContent = "Конец меню.";
+      if (mySession === sessionId) {
+        speak("Конец меню.");
+        document.getElementById('status').textContent = "Конец меню.";
+      }
       return;
     }
     const item = flatMenu[currentIndex];
     document.getElementById('status').textContent = `${item.category}: ${item.name}`;
 
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`, () => {
-      if (isReadingAll) {
+      if (isReadingAll && mySession === sessionId) {
         currentIndex++;
-        readCurrentDish(); 
+        readCurrentDish(mySession); 
       }
     });
   }
 
   function readNext() {
+    sessionId++; // Обрываем авточтение
     isReadingAll = false; 
-    synth.cancel(); 
     
     currentIndex++;
-    if (currentIndex >= flatMenu.length) {
-      currentIndex = 0; 
-    }
+    if (currentIndex >= flatMenu.length) currentIndex = 0; 
+    
     const item = flatMenu[currentIndex];
     document.getElementById('status').textContent = `Следующее: ${item.category} - ${item.name}`;
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`);
   }
 
-  // === ГОЛОСОВОЕ РАСПОЗНАВАНИЕ ===
+  // === МИКРОФОН ===
+  function startListening() {
+    if (recognition && !micRunning) {
+      try { recognition.start(); micRunning = true; } catch(e) {}
+    }
+  }
+
+  function stopListening() {
+    if (recognition && micRunning) {
+      try { recognition.abort(); micRunning = false; } catch(e) {}
+    }
+  }
+
   if (SR) {
     recognition = new SR();
     recognition.lang = 'ru-RU';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     
-    recognition.onstart = () => { 
-      if(!isSpeaking) document.getElementById('status').textContent = "Слушаю..."; 
-    };
-    
-    recognition.onend = () => {
-      // Перезапускаем микрофон, если он не занят речью
-      if (micShouldBeOn) {
-        setTimeout(() => {
-          try { recognition.start(); } catch(e) {}
-        }, 300);
-      }
-    };
+    recognition.onstart = () => { micRunning = true; };
+    recognition.onend = () => { micRunning = false; };
+    recognition.onerror = () => { micRunning = false; };
     
     recognition.onresult = (event) => {
       const t = event.results[0][0].transcript.toLowerCase().trim();
       document.getElementById('status').textContent = `Услышала: "${t}"`;
       
-      // Проверяем категории
       let foundCategory = null;
       
       if (t.includes('завтрак')) foundCategory = "Завтрак";
@@ -253,47 +231,57 @@
       else if (t.includes('добавк')) foundCategory = "Добавки";
 
       if (foundCategory) {
-        // Ищем индекс первого блюда этой категории
+        sessionId++; // Сбрасываем старое чтение
+        isReadingAll = false;
+        
         const catIndex = flatMenu.findIndex(item => item.category === foundCategory);
         if (catIndex !== -1) {
-          isReadingAll = false; // Останавливаем автоматическое чтение всего
-          synth.cancel(); // Обрываем робота
           currentIndex = catIndex;
           const item = flatMenu[currentIndex];
-          
-          document.getElementById('status').textContent = `Переход в раздел: ${foundCategory}`;
+          document.getElementById('status').textContent = `Раздел: ${foundCategory}`;
           speak(`Раздел ${foundCategory}. ${item.name}, ${item.price} рублей.`);
         }
+      } else {
+         // Если сказали что-то непонятное, просто перезапускаем микрофон
+         setTimeout(startListening, 500);
       }
     };
   }
 
-  // === ОБРАБОТКА ТАПОВ ===
+  // === ТАПЫ ===
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
-    tapCount++;
-    if (tapCount === 1) {
-      tapTimer = setTimeout(() => {
-        readAll();
-        tapCount = 0;
-      }, 400);
-    } else if (tapCount >= 2) {
-      clearTimeout(tapTimer); 
-      readNext();
-      tapCount = 0;
+    // Если робот говорит, 1 тап = СТОП и включение микрофона
+    if (isSpeaking) {
+      sessionId++; // Жестко обрываем чтение
+      synth.cancel();
+      isSpeaking = false;
+      isReadingAll = false;
+      document.getElementById('status').textContent = "Остановлено. Скажите раздел.";
+      startListening(); // Сразу слушаем
+      return; 
     }
+
+    // Если робот молчит, считаем тапы
+    tapCount++;
+    if (tapTimer) clearTimeout(tapTimer);
+
+    tapTimer = setTimeout(() => {
+      if (tapCount === 1) {
+        readAll();
+      } else if (tapCount >= 2) {
+        readNext();
+      }
+      tapCount = 0;
+    }, 400);
   });
 
   // Запуск
   renderMenu();
-  
   setTimeout(() => {
-    speak("Меню Интурист. Один тап: читать всё. Два тапа: следующее блюдо. Назовите раздел голосом, например: Салаты.");
-    document.getElementById('status').textContent = "1 тап - всё, 2 тапа - след. Или скажите раздел.";
-    // Включаем микрофон после приветствия
-    setTimeout(() => { if(recognition) try { recognition.start(); } catch(e) {} }, 5000);
+    speak("Меню Интурист. Один тап: читать всё. Два тапа: следующее. Или назовите раздел голосом.");
   }, 500);
 
 </script>
