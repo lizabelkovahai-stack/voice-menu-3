@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -11,11 +12,14 @@
     margin: 0; padding: 15px; background: #1a1a1a; color: #fff;
     min-height: 100vh; display: flex; flex-direction: column; justify-content: center; user-select: none;
   }
+  /* Зона для тапов на весь экран */
   .tap-zone { position: fixed; inset: 0; z-index: 9999; cursor: pointer; }
+  /* Блоки меню */
   .menu-container { display: flex; flex-direction: column; gap: 10px; max-width: 500px; margin: 0 auto; pointer-events: none; }
   .block { background: #222; border: 2px solid #d4af37; border-radius: 12px; padding: 12px; text-align: center; }
   .block-title { font-size: 20px; font-weight: bold; color: #d4af37; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 2px; }
   .block-items { font-size: 14px; color: #ccc; line-height: 1.4; }
+  /* Статус */
   .status { margin-top: 15px; text-align: center; color: #4dabf7; font-size: 16px; font-weight: bold; pointer-events: none; min-height: 24px; }
 </style>
 </head>
@@ -23,7 +27,7 @@
 
 <div class="tap-zone" id="tapZone"></div>
 <div class="menu-container" id="menuContainer"></div>
-<div class="status" id="status">Загрузка меню...</div>
+<div class="status" id="status">Нажмите на экран для запуска</div>
 
 <script>
   // === ПОЛНОЕ МЕНЮ ИЗ PDF ===
@@ -31,7 +35,7 @@
     "Завтрак": [
       { name: "Каша овсяная Тирамису", price: 750 },
       { name: "Рисовая каша с копченой грушей", price: 750 },
-      { name: "Кукурузная каша с пюре манго", price: 650 },
+      { name: "Кукурузная каша с пюре из манго и ягодами", price: 650 },
       { name: "Омлет с крабом", price: 1100 },
       { name: "Омлет четыре сыра", price: 990 },
       { name: "Омлет с ветчиной и беконом", price: 690 },
@@ -42,6 +46,11 @@
       { name: "Брускетта с авокадо и яйцом пашот", price: 590 },
       { name: "Сырники с рикоттой", price: 750 },
       { name: "Блины классические", price: 350 }
+    ],
+    "Добавки к завтраку": [
+      { name: "Красная икра / Щучья икра со сметаной", price: 500 },
+      { name: "Соус ягодный / Сметана / Мед / Кленовый сироп / Сгущенное молоко", price: 250 },
+      { name: "Сыр страчателла", price: 300 }
     ],
     "Закуски": [
       { name: "Тала из осетра", price: 2400 },
@@ -63,18 +72,19 @@
       { name: "Салат Мимоза с семгой", price: 790 },
       { name: "Папоротник с говядиной", price: 780 },
       { name: "Салат с баклажанами", price: 680 },
-      { name: "Сыр страчателла", price: 300 },
-      { name: "Овощной салат", price: 560 },
+      { name: "Овощной салат из дальневосточных помидоров", price: 560 },
       { name: "Микс с куриной грудкой", price: 850 },
       { name: "Микс с креветкой", price: 980 }
     ],
-    "Супы": [
+    "Супы и хлеб": [
       { name: "Том Ям", price: 1200 },
       { name: "Уха из амурской рыбы", price: 990 },
       { name: "Крем суп из сельдерея", price: 970 },
       { name: "Куриный бульон с яйцом пашот", price: 650 },
       { name: "Борщ с говядиной и пампушкой", price: 780 },
-      { name: "Суп сырный в хлебной тарелке", price: 680 }
+      { name: "Суп сырный в хлебной тарелке", price: 680 },
+      { name: "Хлебная корзинка", price: 350 },
+      { name: "Хлебная корзинка Бородино", price: 350 }
     ],
     "Основной курс": [
       { name: "Оленина с кедровой кашей", price: 2300 },
@@ -85,42 +95,42 @@
       { name: "Язык говяжий с картофельным пюре", price: 1100 },
       { name: "Щучьи котлеты со сливочным орзо", price: 980 },
       { name: "Куриная грудка со шпинатом", price: 950 },
-      { name: "Лосось с соусом чимичурри", price: 1800 },
-      { name: "Палтус в сиропе саган-дайля", price: 1900 },
+      { name: "Лосось с соусом чимичурри и спаржей", price: 1800 },
+      { name: "Палтус в сиропе саган-дайля и печенью трески", price: 1900 },
       { name: "Чахан с морепродуктами", price: 750 }
     ],
     "Лепка": [
-      { name: "Таежные пельмени с олениной", price: 1200 },
-      { name: "Пельмени с чернилами каракатицы", price: 1250 },
+      { name: "Таежные пельмени с олениной, грибами и папоротником", price: 1200 },
+      { name: "Пельмени с чернилами каракатицы и рыбным соусом", price: 1250 },
       { name: "Пельмени Интурист в горшочке", price: 780 },
       { name: "Вареники с картофелем и беконом", price: 580 },
       { name: "Вареники с капустой", price: 580 },
-      { name: "Вареники с творогом", price: 580 }
+      { name: "Вареники с творогом и карамельной эспумой", price: 580 }
     ],
     "Пицца": [
-      { name: "Пицца Ветчина и грибы", price: 740 },
-      { name: "Пицца Четыре сыра", price: 880 },
-      { name: "Пицца Мясная", price: 840 },
-      { name: "Пицца Том Ям", price: 990 },
-      { name: "Пицца Пепперони", price: 680 },
-      { name: "Пицца Грибная", price: 730 },
-      { name: "Пицца Деревенская", price: 740 },
-      { name: "Пицца Маргарита", price: 690 }
+      { name: "Ветчина и грибы", price: 740 },
+      { name: "Четыре сыра", price: 880 },
+      { name: "Мясная", price: 840 },
+      { name: "Том Ям", price: 990 },
+      { name: "Пепперони", price: 680 },
+      { name: "Грибная", price: 730 },
+      { name: "Деревенская", price: 740 },
+      { name: "Маргарита", price: 690 }
     ],
     "Десерты": [
       { name: "Груша в миндальном финансье", price: 950 },
       { name: "Павлова на бисквите", price: 630 },
-      { name: "Меренга с сорбетом", price: 580 },
+      { name: "Меренговый рулет", price: 580 },
       { name: "Торт Медовый", price: 540 },
       { name: "Торт Наполеон", price: 540 },
       { name: "Черничный пирог", price: 540 },
       { name: "Семифредо", price: 540 },
-      { name: "Мороженое", price: 350 }
+      { name: "Мороженое или Сорбеты", price: 350 }
     ],
     "Гарниры": [
       { name: "Батат фри с сыром пармезан", price: 680 },
-      { name: "Овощи гриль", price: 600 },
-      { name: "Капуста цветная и брокколи", price: 400 },
+      { name: "Овощи гриль с трюфельной пастой", price: 600 },
+      { name: "Капуста цветная и брокколи на пару", price: 400 },
       { name: "Картофельное пюре", price: 400 },
       { name: "Картофель запеченный айдахо", price: 400 },
       { name: "Картофель фри", price: 400 },
@@ -128,7 +138,7 @@
     ]
   };
 
-  // Делаем плоский список для удобного перелистывания
+  // Создаем плоский список для удобного перелистывания
   let flatMenu = [];
   for (let section in menuData) {
     for (let item of menuData[section]) {
@@ -139,10 +149,9 @@
   let currentIndex = 0;
   let isSpeaking = false;
   let isReadingAll = false;
-
   const synth = window.speechSynthesis;
 
-  // Отрисовка интерфейса
+  // Отрисовка визуального интерфейса
   function renderMenu() {
     const container = document.getElementById('menuContainer');
     container.innerHTML = '';
@@ -178,30 +187,31 @@
     readCurrentDish();
   }
 
-  // Читать текущее блюдо
+  // Вспомогательная функция для последовательного чтения
   function readCurrentDish() {
     if (!isReadingAll || currentIndex >= flatMenu.length) {
       isReadingAll = false;
-      speak("Конец меню. Нажмите два раза, чтобы перейти в начало, или один раз для повтора.");
+      speak("Конец меню.");
       document.getElementById('status').textContent = "Конец меню.";
       return;
     }
     const item = flatMenu[currentIndex];
     
-    // Показываем на экране, что читаем
     document.getElementById('status').textContent = `${item.category}: ${item.name}`;
 
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`, () => {
       if (isReadingAll) {
         currentIndex++;
-        readCurrentDish(); // Переходим к следующему автоматически
+        readCurrentDish(); 
       }
     });
   }
 
-  // 2 ТАПА: Перейти к следующему блюду
+  // 2 ТАПА: Остановить и читать следующее
   function readNext() {
-    isReadingAll = false; // Отключаем авточтение всего
+    isReadingAll = false; // Отключаем авточтение
+    synth.cancel(); // Обрываем робота, если он говорил (это сработает сразу, как только тапнешь 2 раза)
+    
     currentIndex++;
     if (currentIndex >= flatMenu.length) {
       currentIndex = 0; // По кругу
@@ -211,39 +221,35 @@
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`);
   }
 
-  // Обработка тапов
+  // УМНАЯ ОБРАБОТКА ТАПОВ (без сброса)
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
-    // Если робот говорит, клик просто останавливает его
-    if (isSpeaking) {
-      synth.cancel();
-      isSpeaking = false;
-      isReadingAll = false; 
-      document.getElementById('status').textContent = "Остановлено. 1 тап - читать всё, 2 тапа - следующее.";
-      return;
-    }
-
     tapCount++;
-    if (tapTimer) clearTimeout(tapTimer);
-
-    tapTimer = setTimeout(() => {
-      if (tapCount === 1) {
-        readAll(); // 1 тап
-      } else if (tapCount >= 2) {
-        readNext(); // 2 тапа
-      }
+    
+    // Если это первый тап, ждем 400 мс. Вдруг будет второй?
+    if (tapCount === 1) {
+      tapTimer = setTimeout(() => {
+        // Прошло 400 мс, второго тапа не было. Значит это ОДИН тап.
+        readAll();
+        tapCount = 0;
+      }, 400);
+    } 
+    // Если это второй тап (успел в течение 400 мс)
+    else if (tapCount >= 2) {
+      clearTimeout(tapTimer); // Отменяем одиночный тап
+      readNext();
       tapCount = 0;
-    }, 400);
+    }
   });
 
   // Запуск
   renderMenu();
   
-  // Приветствие
+  // Первое приветствие
   setTimeout(() => {
-    speak("Меню Интурист. Один тап: прочитать всё меню. Два тапа: перейти к следующему блюду.");
+    speak("Меню Интурист. Один тап: читать всё. Два тапа: следующее блюдо.");
     document.getElementById('status').textContent = "1 тап - читать всё, 2 тапа - следующее.";
   }, 500);
 
