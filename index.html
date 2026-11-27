@@ -26,7 +26,7 @@
 <div class="status" id="status">Загрузка...</div>
 
 <script>
-  // === МЕНЮ ===
+  // === ПОЛНОЕ МЕНЮ ===
   const menuData = {
     "Завтрак": [
       { name: "Каша овсяная Тирамису", price: 750 }, { name: "Рисовая каша с копченой грушей", price: 750 },
@@ -96,21 +96,21 @@
   };
 
   let flatMenu = [];
+  let categoryNames = []; // Список названий разделов
+  
   for (let section in menuData) {
+    categoryNames.push(section);
     for (let item of menuData[section]) {
       flatMenu.push({ ...item, category: section });
     }
   }
 
   let currentIndex = 0;
+  let currentCategoryIndex = 0;
   let isSpeaking = false;
-  let isReadingAll = false;
-  let sessionId = 0; // Защита от "каши" при остановке
-  let micRunning = false;
+  let sessionId = 0;
   
   const synth = window.speechSynthesis;
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let recognition = null;
 
   function renderMenu() {
     const container = document.getElementById('menuContainer');
@@ -124,64 +124,32 @@
     }
   }
 
-  // УМНАЯ ОЗВУЧКА (выключает микрофон, чтобы не слышать себя)
   function speak(text, onEndCallback) {
     if (!synth) return;
-    
-    // 1. Выключаем микрофон перед речью
-    stopListening();
-
     synth.cancel(); 
     isSpeaking = true;
     
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'ru-RU';
     u.rate = 1.0;
-    
     u.onend = () => {
       isSpeaking = false;
       if (onEndCallback) onEndCallback();
-      
-      // 2. Включаем микрофон после того, как договорили
-      startListening();
     };
-    
     synth.speak(u);
   }
 
-  function readAll() {
+  // Прочитать текущее блюдо
+  function readCurrentDish() {
     sessionId++;
-    const currentSession = sessionId;
-    isReadingAll = true;
-    currentIndex = 0;
-    document.getElementById('status').textContent = "Читаю всё меню...";
-    readCurrentDish(currentSession);
-  }
-
-  function readCurrentDish(mySession) {
-    if (!isReadingAll || mySession !== sessionId || currentIndex >= flatMenu.length) {
-      isReadingAll = false;
-      if (mySession === sessionId) {
-        speak("Конец меню.");
-        document.getElementById('status').textContent = "Конец меню.";
-      }
-      return;
-    }
     const item = flatMenu[currentIndex];
     document.getElementById('status').textContent = `${item.category}: ${item.name}`;
-
-    speak(`${item.category}. ${item.name}, ${item.price} рублей.`, () => {
-      if (isReadingAll && mySession === sessionId) {
-        currentIndex++;
-        readCurrentDish(mySession); 
-      }
-    });
+    speak(`${item.category}. ${item.name}, ${item.price} рублей.`);
   }
 
+  // Перейти к следующему блюду
   function readNext() {
-    sessionId++; // Обрываем авточтение
-    isReadingAll = false; 
-    
+    sessionId++;
     currentIndex++;
     if (currentIndex >= flatMenu.length) currentIndex = 0; 
     
@@ -190,89 +158,52 @@
     speak(`${item.category}. ${item.name}, ${item.price} рублей.`);
   }
 
-  // === МИКРОФОН ===
-  function startListening() {
-    if (recognition && !micRunning) {
-      try { recognition.start(); micRunning = true; } catch(e) {}
+  // ПЕРЕЙТИ К СЛЕДУЮЩЕМУ РАЗДЕЛУ (НОВАЯ ФУНКЦИЯ)
+  function nextCategory() {
+    sessionId++;
+    
+    // Находим текущий раздел и переключаемся на следующий по кругу
+    const currentItem = flatMenu[currentIndex];
+    let currentCatIdx = categoryNames.indexOf(currentItem.category);
+    let nextCatIdx = (currentCatIdx + 1) % categoryNames.length;
+    
+    const nextCatName = categoryNames[nextCatIdx];
+    
+    // Находим первое блюдо в новом разделе
+    const newIndex = flatMenu.findIndex(item => item.category === nextCatName);
+    if (newIndex !== -1) {
+      currentIndex = newIndex;
+      const item = flatMenu[currentIndex];
+      document.getElementById('status').textContent = `Раздел: ${nextCatName}`;
+      speak(`Раздел ${nextCatName}. ${item.name}, ${item.price} рублей.`);
     }
   }
 
-  function stopListening() {
-    if (recognition && micRunning) {
-      try { recognition.abort(); micRunning = false; } catch(e) {}
-    }
-  }
-
-  if (SR) {
-    recognition = new SR();
-    recognition.lang = 'ru-RU';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-    
-    recognition.onstart = () => { micRunning = true; };
-    recognition.onend = () => { micRunning = false; };
-    recognition.onerror = () => { micRunning = false; };
-    
-    recognition.onresult = (event) => {
-      const t = event.results[0][0].transcript.toLowerCase().trim();
-      document.getElementById('status').textContent = `Услышала: "${t}"`;
-      
-      let foundCategory = null;
-      
-      if (t.includes('завтрак')) foundCategory = "Завтрак";
-      else if (t.includes('закуск')) foundCategory = "Закуски";
-      else if (t.includes('салат')) foundCategory = "Салаты";
-      else if (t.includes('суп') || t.includes('уха') || t.includes('борщ')) foundCategory = "Супы";
-      else if (t.includes('основн') || t.includes('горяч')) foundCategory = "Основной курс";
-      else if (t.includes('лепк') || t.includes('пельмен')) foundCategory = "Лепка";
-      else if (t.includes('пицц')) foundCategory = "Пицца";
-      else if (t.includes('десерт') || t.includes('сладк')) foundCategory = "Десерты";
-      else if (t.includes('гарнир')) foundCategory = "Гарниры";
-      else if (t.includes('добавк')) foundCategory = "Добавки";
-
-      if (foundCategory) {
-        sessionId++; // Сбрасываем старое чтение
-        isReadingAll = false;
-        
-        const catIndex = flatMenu.findIndex(item => item.category === foundCategory);
-        if (catIndex !== -1) {
-          currentIndex = catIndex;
-          const item = flatMenu[currentIndex];
-          document.getElementById('status').textContent = `Раздел: ${foundCategory}`;
-          speak(`Раздел ${foundCategory}. ${item.name}, ${item.price} рублей.`);
-        }
-      } else {
-         // Если сказали что-то непонятное, просто перезапускаем микрофон
-         setTimeout(startListening, 500);
-      }
-    };
-  }
-
-  // === ТАПЫ ===
+  // === УМНАЯ ОБРАБОТКА ТАПОВ ===
   let tapCount = 0;
   let tapTimer = null;
 
   document.getElementById('tapZone').addEventListener('click', () => {
-    // Если робот говорит, 1 тап = СТОП и включение микрофона
+    // Если робот говорит, любой тап просто останавливает его
     if (isSpeaking) {
-      sessionId++; // Жестко обрываем чтение
+      sessionId++;
       synth.cancel();
       isSpeaking = false;
-      isReadingAll = false;
-      document.getElementById('status').textContent = "Остановлено. Скажите раздел.";
-      startListening(); // Сразу слушаем
+      document.getElementById('status').textContent = "Остановлено.";
       return; 
     }
 
-    // Если робот молчит, считаем тапы
     tapCount++;
     if (tapTimer) clearTimeout(tapTimer);
 
+    // Ждем 400 мс после последнего тапа, чтобы понять, сколько их было
     tapTimer = setTimeout(() => {
       if (tapCount === 1) {
-        readAll();
-      } else if (tapCount >= 2) {
-        readNext();
+        readCurrentDish(); // 1 тап: прочитать текущее
+      } else if (tapCount === 2) {
+        readNext(); // 2 тапа: следующее блюдо
+      } else if (tapCount >= 3) {
+        nextCategory(); // 3 тапа: следующий раздел!
       }
       tapCount = 0;
     }, 400);
@@ -280,8 +211,10 @@
 
   // Запуск
   renderMenu();
+  
   setTimeout(() => {
-    speak("Меню Интурист. Один тап: читать всё. Два тапа: следующее. Или назовите раздел голосом.");
+    speak("Меню Интурист. Один тап: прочитать блюдо. Два тапа: следующее блюдо. Три тапа: перейти в следующий раздел.");
+    document.getElementById('status').textContent = "1 тап - блюдо, 2 тапа - след, 3 тапа - раздел.";
   }, 500);
 
 </script>
